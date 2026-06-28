@@ -1,116 +1,77 @@
-let pdfDoc = null;
-let currentPage = 1;
-let tool = null;
-let notes = [];
+// 6개월 사용기간 관리
+const installKey = 'installDate';
+let installDate = localStorage.getItem(installKey);
 
-// PDF 로드
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  const url = URL.createObjectURL(file);
-  loadPDF(url);
-});
+if (!installDate) {
+  installDate = new Date().toISOString();
+  localStorage.setItem(installKey, installDate);
+}
 
-function loadPDF(url) {
-  pdfjsLib.getDocument(url).promise.then((pdf) => {
-    pdfDoc = pdf;
-    renderPage(1);
+function isExpired() {
+  const install = new Date(localStorage.getItem('installDate'));
+  const now = new Date();
+  const diff = now - install;
+  const days = diff / (1000 * 60 * 60 * 24);
+  return days > 180;
+}
+
+const statusText = document.getElementById('statusText');
+
+if (isExpired()) {
+  alert('무료 사용기간(6개월)이 만료되었습니다.');
+  statusText.textContent = '기간 만료 - 읽기 전용';
+} else {
+  statusText.textContent = '무료 버전 - 기능 제한 없음 (6개월)';
+}
+
+// 주석 데모
+const canvas = document.getElementById('pdfCanvas');
+const ctx = canvas.getContext('2d');
+
+let annotations = [];
+let history = [];
+
+function renderAnnotations() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#333';
+  ctx.fillText('PDF Annotator Free (데모 캔버스)', 20, 30);
+
+  ctx.fillStyle = 'red';
+  annotations.forEach((a) => {
+    ctx.beginPath();
+    ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
+    ctx.fill();
   });
 }
 
-// 페이지 렌더링
-function renderPage(num) {
-  pdfDoc.getPage(num).then((page) => {
-    const viewport = page.getViewport({ scale: 1.5 });
-    const canvas = document.getElementById('pdfCanvas');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
-    page.render({ canvasContext: ctx, viewport });
-
-    renderNotes();
-  });
+function saveState() {
+  history.push(JSON.stringify(annotations));
 }
 
-// 툴 선택
-function setTool(t) {
-  tool = t;
+function addDummyAnnotation() {
+  if (isExpired()) return;
+  saveState();
+  const x = 100 + Math.random() * 600;
+  const y = 80 + Math.random() * 480;
+  annotations.push({ id: Date.now(), x, y });
+  renderAnnotations();
 }
 
-// 캔버스 클릭 이벤트
-document.getElementById('pdfCanvas').addEventListener('click', (e) => {
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  if (tool === 'highlight') {
-    notes.push({
-      type: 'highlight',
-      x,
-      y,
-      color: document.getElementById('highlightColor').value,
-    });
-  }
-
-  if (tool === 'text') {
-    const text = prompt('텍스트 입력:');
-    if (text) {
-      notes.push({
-        type: 'text',
-        x,
-        y,
-        text,
-      });
-    }
-  }
-
-  renderNotes();
-});
-
-// 노트 렌더링
-function renderNotes() {
-  const canvas = document.getElementById('pdfCanvas');
-  const ctx = canvas.getContext('2d');
-
-  renderPage(currentPage);
-
-  notes.forEach((n) => {
-    if (n.type === 'highlight') {
-      ctx.fillStyle = n.color;
-      ctx.fillRect(n.x - 40, n.y - 10, 80, 20);
-    }
-
-    if (n.type === 'text') {
-      ctx.fillStyle = 'red';
-      ctx.font = '16px Arial';
-      ctx.fillText(n.text, n.x, n.y);
-    }
-  });
+function undo() {
+  if (history.length === 0) return;
+  annotations = JSON.parse(history.pop());
+  renderAnnotations();
 }
 
-// 저장
-function saveToBrowser() {
-  localStorage.setItem('pdfNotes', JSON.stringify(notes));
-  alert('저장 완료!');
+function deleteLast() {
+  if (isExpired()) return;
+  if (annotations.length === 0) return;
+  saveState();
+  annotations.pop();
+  renderAnnotations();
 }
 
-// 불러오기
-function importJSON() {
-  const json = prompt('JSON 입력:');
-  if (json) {
-    notes = JSON.parse(json);
-    renderNotes();
-  }
-}
-
-// 내보내기
-function exportJSON() {
-  alert(JSON.stringify(notes));
-}
-
-// 초기화
-function clearNotes() {
-  notes = [];
-  renderNotes();
-}
+renderAnnotations();

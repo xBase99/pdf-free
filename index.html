@@ -2,14 +2,11 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>PDF Annotator v3.0 (xBase99)</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>PDF Annotator Free (xBase99)</title>
+
     <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
 
-    <!-- PDF.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
-    <!-- PWA -->
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
@@ -18,65 +15,48 @@
   </head>
 
   <body>
-    <!-- 상단 헤더 -->
-    <header class="top-bar">
-      <span class="app-title">PDF Annotator v3.0</span>
-
-      <input
-        type="file"
-        id="fileInput"
-        accept="application/pdf"
-        style="display: none"
-      />
-      <button onclick="document.getElementById('fileInput').click()">
-        Choose File
-      </button>
-
-      <button onclick="saveToBrowser()">Browser Save</button>
-      <button onclick="clearNotes()">Clear Notes</button>
-      <button onclick="exportJSON()">Export JSON</button>
-      <button onclick="importJSON()">Import JSON</button>
+    <header>
+      <h1>PDF Annotator Free</h1>
+      <p>기능 제한 없음 · 무료 사용기간 6개월</p>
     </header>
 
-    <!-- 전체 레이아웃 -->
-    <div class="layout">
-      <!-- 좌측 사이드바 -->
-      <aside class="sidebar">
-        <section class="panel">
-          <h3>PDF LIST</h3>
-          <div id="pdfList"></div>
-        </section>
+    <!-- 설치 버튼 -->
+    <button id="installBtn" class="install-btn">앱 설치하기</button>
 
-        <section class="panel">
-          <h3>TOOLS</h3>
+    <script>
+      let deferredPrompt;
+      const installBtn = document.getElementById('installBtn');
+      installBtn.style.display = 'none';
 
-          <label>Highlight Color</label>
-          <input type="color" id="highlightColor" value="#ffff00" />
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'inline-block';
+      });
 
-          <button class="tool-btn" onclick="setTool('highlight')">
-            Highlight
-          </button>
-          <button class="tool-btn" onclick="setTool('text')">Text</button>
-        </section>
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+      });
+    </script>
 
-        <section class="panel">
-          <h3>Trip Ad</h3>
-          <div class="trip-ad-box">
-            <a href="https://www.trip.com/t/zGQ0YJsVIV2" target="_blank">
-              <img src="trip_ad_banner.png" class="trip-banner" />
-            </a>
-          </div>
-        </section>
-      </aside>
+    <!-- PDF Annotator UI -->
+    <main>
+      <div class="toolbar">
+        <button onclick="addDummyAnnotation()">주석 추가</button>
+        <button onclick="undo()">되돌리기</button>
+        <button onclick="deleteLast()">마지막 주석 삭제</button>
+        <span id="statusText" class="status"></span>
+      </div>
 
-      <!-- 우측 메인 PDF 영역 -->
-      <main class="main-area">
-        <canvas id="pdfCanvas"></canvas>
-      </main>
-    </div>
+      <div class="canvas-wrapper">
+        <canvas id="pdfCanvas" width="800" height="600"></canvas>
+      </div>
+    </main>
 
-    <footer class="footer">
-      <small>© xBase99 · PDF Annotator v3.0</small>
+    <footer>
+      <small>© xBase99 · PDF Annotator Free</small>
     </footer>
 
     <script src="app.js"></script>
