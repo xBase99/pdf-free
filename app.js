@@ -1,77 +1,176 @@
-// 6개월 사용기간 관리
-const installKey = 'installDate';
-let installDate = localStorage.getItem(installKey);
+window.pdfDoc = null;
+window.currentPage = 1;
+window.currentScale = 1.5; // 기본 배율
+let tool = null;
+let notes = [];
+let undoStack = [];
 
-if (!installDate) {
-  installDate = new Date().toISOString();
-  localStorage.setItem(installKey, installDate);
+// ── 히스토리 저장 ──
+function saveHistory() {
+  undoStack.push(JSON.stringify(notes));
 }
 
-function isExpired() {
-  const install = new Date(localStorage.getItem('installDate'));
-  const now = new Date();
-  const diff = now - install;
-  const days = diff / (1000 * 60 * 60 * 24);
-  return days > 180;
+// ── Undo ──
+function undo() {
+  if (undoStack.length === 0) {
+    alert('더 이상 되돌릴 내용이 없습니다.');
+    return;
+  }
+  notes = JSON.parse(undoStack.pop());
+  renderPage(window.currentPage);
 }
 
-const statusText = document.getElementById('statusText');
+// ── PDF 로드 ──
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const url = URL.createObjectURL(file);
+  loadPDF(url);
+});
 
-if (isExpired()) {
-  alert('무료 사용기간(6개월)이 만료되었습니다.');
-  statusText.textContent = '기간 만료 - 읽기 전용';
-} else {
-  statusText.textContent = '무료 버전 - 기능 제한 없음 (6개월)';
-}
-
-// 주석 데모
-const canvas = document.getElementById('pdfCanvas');
-const ctx = canvas.getContext('2d');
-
-let annotations = [];
-let history = [];
-
-function renderAnnotations() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#fafafa';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#333';
-  ctx.fillText('PDF Annotator Free (데모 캔버스)', 20, 30);
-
-  ctx.fillStyle = 'red';
-  annotations.forEach((a) => {
-    ctx.beginPath();
-    ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
-    ctx.fill();
+function loadPDF(url) {
+  pdfjsLib.getDocument(url).promise.then((pdf) => {
+    window.pdfDoc = pdf;
+    renderPage(1);
+    if (window.updatePageInfo) window.updatePageInfo();
   });
 }
 
-function saveState() {
-  history.push(JSON.stringify(annotations));
+// ── 페이지 렌더링 ──
+function renderPage(num) {
+  window.pdfDoc.getPage(num).then((page) => {
+    const viewport = page.getViewport({ scale: window.currentScale });
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    const renderTask = page.render({ canvasContext: ctx, viewport });
+    const renderPromise = renderTask.promise ?? renderTask;
+    renderPromise.then(() => {
+      drawNotes(ctx);
+    });
+  });
 }
 
-function addDummyAnnotation() {
-  if (isExpired()) return;
-  saveState();
-  const x = 100 + Math.random() * 600;
-  const y = 80 + Math.random() * 480;
-  annotations.push({ id: Date.now(), x, y });
-  renderAnnotations();
+// ── 배율 조절 ──
+function zoomIn() {
+  if (window.currentScale >= 3.0) return;
+  window.currentScale = Math.round((window.currentScale + 0.25) * 100) / 100;
+  updateZoomLabel();
+  renderPage(window.currentPage);
 }
 
-function undo() {
-  if (history.length === 0) return;
-  annotations = JSON.parse(history.pop());
-  renderAnnotations();
+function zoomOut() {
+  if (window.currentScale <= 0.5) return;
+  window.currentScale = Math.round((window.currentScale - 0.25) * 100) / 100;
+  updateZoomLabel();
+  renderPage(window.currentPage);
 }
 
-function deleteLast() {
-  if (isExpired()) return;
-  if (annotations.length === 0) return;
-  saveState();
-  annotations.pop();
-  renderAnnotations();
+function setZoom(val) {
+  const scale = parseFloat(val);
+  if (isNaN(scale) || scale < 0.5 || scale > 3.0) return;
+  window.currentScale = scale;
+  updateZoomLabel();
+  renderPage(window.currentPage);
 }
 
-renderAnnotations();
+function updateZoomLabel() {
+  const el = document.getElementById('zoomLabel');
+  if (el) el.textContent = Math.round(window.currentScale * 100) + '%';
+  const sel = document.getElementById('zoomSelect');
+  if (sel) sel.value = window.currentScale;
+}
+
+// ── 노트 드로잉 ──
+function drawNotes(ctx) {
+  notes.forEach((n) => {
+    if (n.type === 'highlight') {
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = n.color;
+      ctx.fillRect(n.x - 40, n.y - 10, 80, 20);
+      ctx.globalAlpha = 1.0;
+    }
+    if (n.type === 'text') {
+      ctx.fillStyle = 'red';
+      ctx.font = '16px Arial';
+      ctx.fillText(n.text, n.x, n.y);
+    }
+  });
+}
+
+// ── 툴 선택 ──
+function setTool(t) {
+  tool = t;
+}
+
+// ── 캔버스 클릭 ──
+document.getElementById('pdfCanvas').addEventListener('click', (e) => {
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (tool === 'highlight') {
+    saveHistory();
+    notes.push({
+      type: 'highlight',
+      x, y,
+      color: document.getElementById('highlightColor').value,
+    });
+    renderPage(window.currentPage);
+  }
+
+  if (tool === 'text') {
+    const text = prompt('텍스트 입력:');
+    if (text) {
+      saveHistory();
+      notes.push({ type: 'text', x, y, text });
+      renderPage(window.currentPage);
+    }
+  }
+});
+
+// ── 단축키: Ctrl+Z / Ctrl+= / Ctrl+- ──
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    e.preventDefault();
+    undo();
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+    e.preventDefault();
+    zoomIn();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+    e.preventDefault();
+    zoomOut();
+  }
+});
+
+// ── 저장 ──
+function saveToBrowser() {
+  localStorage.setItem('pdfNotes', JSON.stringify(notes));
+  alert('저장 완료!');
+}
+
+// ── 불러오기 ──
+function importJSON() {
+  const json = prompt('JSON 입력:');
+  if (json) {
+    saveHistory();
+    notes = JSON.parse(json);
+    renderPage(window.currentPage);
+  }
+}
+
+// ── 내보내기 ──
+function exportJSON() {
+  alert(JSON.stringify(notes));
+}
+
+// ── 초기화 ──
+function clearNotes() {
+  saveHistory();
+  notes = [];
+  renderPage(window.currentPage);
+}

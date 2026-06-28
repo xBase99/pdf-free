@@ -2,64 +2,125 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>PDF Annotator Free (xBase99)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Annotator v3.0</title>
 
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="style.css" />
 
+    <!-- 스타일 -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- 상단 바 -->
+    <div class="top-bar">
+      <span class="app-title">PDF Annotator v3.0</span>
+      <input type="file" id="fileInput" accept="application/pdf" />
+      <button onclick="setTool('highlight')">형광펜</button>
+      <input type="color" id="highlightColor" value="#ffff00" />
+      <button onclick="setTool('text')">텍스트</button>
+
+      <button onclick="saveToBrowser()">저장</button>
+      <button onclick="exportJSON()">내보내기</button>
+      <button onclick="importJSON()">불러오기</button>
+      <button onclick="undo()">↩ 실행취소</button>
+      <button onclick="clearNotes()">초기화</button>
+
+      <!-- 배율 조절 -->
+      <button onclick="zoomOut()">🔍−</button>
+      <select id="zoomSelect" onchange="setZoom(this.value)">
+        <option value="0.5">50%</option>
+        <option value="0.75">75%</option>
+        <option value="1.0">100%</option>
+        <option value="1.25">125%</option>
+        <option value="1.5" selected>150%</option>
+        <option value="1.75">175%</option>
+        <option value="2.0">200%</option>
+        <option value="2.5">250%</option>
+        <option value="3.0">300%</option>
+      </select>
+      <button onclick="zoomIn()">🔍+</button>
+
+      <!-- 페이지 이동 -->
+      <button onclick="prevPage()">◀ 이전</button>
+      <span id="pageInfo"></span>
+      <button onclick="nextPage()">다음 ▶</button>
+    </div>
+
+    <!-- 레이아웃 -->
+    <div class="layout">
+      <!-- 사이드바 -->
+      <div class="sidebar">
+        <div class="panel">
+          <strong>도구 설명</strong>
+          <p>형광펜: 클릭 위치에 하이라이트 박스</p>
+          <p>텍스트: 클릭 후 텍스트 입력</p>
+        </div>
+
+        <div class="panel">
+          <strong>Trip.com × Rail Europe</strong>
+          <div class="trip-ad-box">
+            <img src="trip_ad_banner.png" alt="Trip Ad" class="trip-banner" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 메인 영역 -->
+      <div class="main-area">
+        <canvas id="pdfCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="footer">
+      PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export
+      지원
+    </div>
+
+    <!-- 앱 로직 -->
+    <script src="app.js"></script>
+    <!-- 광고 삽입 스크립트 (하단 배너 등) -->
+    <script src="ads.js"></script>
+
+    <!-- 서비스 워커 등록 -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js');
+        });
       }
+
+      // 페이지 네비게이션용 함수 (app.js에서 사용하는 전역 변수와 연결)
+      function prevPage() {
+        if (!window.pdfDoc) return;
+        if (window.currentPage <= 1) return;
+        window.currentPage--;
+        renderPage(window.currentPage);
+        updatePageInfo();
+      }
+
+      function nextPage() {
+        if (!window.pdfDoc) return;
+        if (window.currentPage >= window.pdfDoc.numPages) return;
+        window.currentPage++;
+        renderPage(window.currentPage);
+        updatePageInfo();
+      }
+
+      function updatePageInfo() {
+        const el = document.getElementById('pageInfo');
+        if (!window.pdfDoc) {
+          el.textContent = '';
+          return;
+        }
+        el.textContent = `페이지 ${window.currentPage} / ${window.pdfDoc.numPages}`;
+      }
+
+      // PDF 로드 후 페이지 정보 갱신을 위해 app.js에서 호출할 수 있게 헬퍼 노출
+      window.updatePageInfo = updatePageInfo;
     </script>
-  </head>
-
-  <body>
-    <header>
-      <h1>PDF Annotator Free</h1>
-      <p>기능 제한 없음 · 무료 사용기간 6개월</p>
-    </header>
-
-    <!-- 설치 버튼 -->
-    <button id="installBtn" class="install-btn">앱 설치하기</button>
-
-    <script>
-      let deferredPrompt;
-      const installBtn = document.getElementById('installBtn');
-      installBtn.style.display = 'none';
-
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBtn.style.display = 'inline-block';
-      });
-
-      installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt = null;
-      });
-    </script>
-
-    <!-- PDF Annotator UI -->
-    <main>
-      <div class="toolbar">
-        <button onclick="addDummyAnnotation()">주석 추가</button>
-        <button onclick="undo()">되돌리기</button>
-        <button onclick="deleteLast()">마지막 주석 삭제</button>
-        <span id="statusText" class="status"></span>
-      </div>
-
-      <div class="canvas-wrapper">
-        <canvas id="pdfCanvas" width="800" height="600"></canvas>
-      </div>
-    </main>
-
-    <footer>
-      <small>© xBase99 · PDF Annotator Free</small>
-    </footer>
-
-    <script src="app.js"></script>
-    <script src="ads.js"></script>
   </body>
 </html>
