@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PDF Annotator Free</title>
+    <link rel="manifest" href="manifest.json" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    </script>
+  </head>
+
+  <body>
+    <h2>PDF Annotator Free (6개월 무료)</h2>
+
+    <!-- 설치 버튼 -->
+    <button id="installBtn" style="padding: 10px">앱 설치하기</button>
+
+    <script>
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installBtn').style.display = 'block';
+      });
+
+      document.getElementById('installBtn').onclick = () => {
+        deferredPrompt.prompt();
+      };
+    </script>
+
+    <!-- Trip.com 광고 -->
+    <div id="trip-ad" style="margin-top: 20px">
+      <a href="https://www.trip.com/t/zGQ0YJsVIV2" target="_blank">
+        <img src="trip_ad_banner.png" width="300" />
+      </a>
+    </div>
+
+    <!-- PDF Annotator 영역 -->
+    <canvas id="pdfCanvas"></canvas>
+
+    <script src="app.js"></script>
+  </body>
+</html>
