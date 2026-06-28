@@ -1,20 +1,21 @@
+const CACHE_NAME = 'pdf-free-cache-v1';
+const URLS_TO_CACHE = [
+  'index.html',
+  'style.css',
+  'app.js',
+  'ads.js',
+  'manifest.json',
+  'trip_ad_banner.png'
+];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open('pdf-free-cache').then((cache) => {
-      return cache.addAll([
-        'index.html',
-        'app.js',
-        'style.css',
-        'trip_ad_banner.png',
-      ]);
-    }),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE))
   );
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((resp) => {
-      return resp || fetch(event.request);
-    }),
+    caches.match(event.request).then((resp) => resp || fetch(event.request))
   );
 });
