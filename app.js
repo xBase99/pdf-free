@@ -2,30 +2,25 @@ window.pdfDoc = null;
 window.currentPage = 1;
 window.currentScale = 1.5;
 let tool = null;
-
-// ── 페이지별 노트 저장: { 1: [...], 2: [...], ... } ──
 let pageNotes = {};
-let undoStack = []; // { page, notes } 형태로 저장
+let undoStack = [];
+let pendingTextPos = null; // 텍스트 모달 대기 좌표
 
-// 현재 페이지 노트 반환 (없으면 빈 배열)
+// ── 페이지별 노트 반환 ──
 function getNotes(page) {
   if (!pageNotes[page]) pageNotes[page] = [];
   return pageNotes[page];
 }
 
-// ── 히스토리 저장 (현재 페이지 기준) ──
+// ── 히스토리 저장 ──
 function saveHistory() {
   const page = window.currentPage;
-  undoStack.push({
-    page,
-    notes: JSON.stringify(getNotes(page)),
-  });
+  undoStack.push({ page, notes: JSON.stringify(getNotes(page)) });
 }
 
-// ── Undo (현재 페이지 기준) ──
+// ── Undo ──
 function undo() {
   const page = window.currentPage;
-  // 현재 페이지에 해당하는 마지막 히스토리 탐색
   for (let i = undoStack.length - 1; i >= 0; i--) {
     if (undoStack[i].page === page) {
       pageNotes[page] = JSON.parse(undoStack[i].notes);
@@ -45,7 +40,6 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 });
 
 function loadPDF(url) {
-  // 새 PDF 로드 시 노트 초기화
   pageNotes = {};
   undoStack = [];
   pdfjsLib.getDocument(url).promise.then((pdf) => {
@@ -62,15 +56,11 @@ function renderPage(num) {
     const viewport = page.getViewport({ scale: window.currentScale });
     const canvas = document.getElementById('pdfCanvas');
     const ctx = canvas.getContext('2d');
-
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-
     const renderTask = page.render({ canvasContext: ctx, viewport });
     const renderPromise = renderTask.promise ?? renderTask;
-    renderPromise.then(() => {
-      drawNotes(ctx, num); // 해당 페이지 노트만 그리기
-    });
+    renderPromise.then(() => drawNotes(ctx, num));
   });
 }
 
@@ -81,14 +71,12 @@ function zoomIn() {
   updateZoomLabel();
   renderPage(window.currentPage);
 }
-
 function zoomOut() {
   if (window.currentScale <= 0.5) return;
   window.currentScale = Math.round((window.currentScale - 0.25) * 100) / 100;
   updateZoomLabel();
   renderPage(window.currentPage);
 }
-
 function setZoom(val) {
   const scale = parseFloat(val);
   if (isNaN(scale) || scale < 0.5 || scale > 3.0) return;
@@ -96,15 +84,12 @@ function setZoom(val) {
   updateZoomLabel();
   renderPage(window.currentPage);
 }
-
 function updateZoomLabel() {
-  const el = document.getElementById('zoomLabel');
-  if (el) el.textContent = Math.round(window.currentScale * 100) + '%';
   const sel = document.getElementById('zoomSelect');
   if (sel) sel.value = window.currentScale;
 }
 
-// ── 노트 드로잉 (지정 페이지 노트만) ──
+// ── 노트 드로잉 ──
 function drawNotes(ctx, page) {
   getNotes(page).forEach((n) => {
     if (n.type === 'highlight') {
@@ -122,59 +107,95 @@ function drawNotes(ctx, page) {
 }
 
 // ── 툴 선택 ──
-function setTool(t) {
-  tool = t;
+function setTool(t) { tool = t; }
+
+// ── 캔버스 이벤트 좌표 추출 (클릭 & 터치 공통) ──
+function getCanvasPos(e) {
+  const canvas = document.getElementById('pdfCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: src.clientX - rect.left,
+    y: src.clientY - rect.top,
+  };
 }
 
-// ── 캔버스 클릭 ──
-document.getElementById('pdfCanvas').addEventListener('click', (e) => {
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+// ── 캔버스 상호작용 처리 ──
+function handleCanvasInteraction(pos) {
   const page = window.currentPage;
-
   if (tool === 'highlight') {
     saveHistory();
     getNotes(page).push({
-      type: 'highlight', x, y,
+      type: 'highlight', x: pos.x, y: pos.y,
       color: document.getElementById('highlightColor').value,
     });
     renderPage(page);
   }
-
   if (tool === 'text') {
-    const text = prompt('텍스트 입력:');
-    if (text) {
-      saveHistory();
-      getNotes(page).push({ type: 'text', x, y, text });
-      renderPage(page);
-    }
+    pendingTextPos = pos;
+    openTextModal();
   }
+}
+
+// 클릭 이벤트
+document.getElementById('pdfCanvas').addEventListener('click', (e) => {
+  handleCanvasInteraction(getCanvasPos(e));
 });
 
-// ── 단축키: Ctrl+Z / Ctrl+= / Ctrl+- ──
+// 터치 이벤트 (모바일)
+document.getElementById('pdfCanvas').addEventListener('touchend', (e) => {
+  e.preventDefault(); // 더블탭 줌 방지
+  handleCanvasInteraction(getCanvasPos(e.changedTouches[0]
+    ? { touches: [e.changedTouches[0]] }
+    : e));
+}, { passive: false });
+
+// ── 텍스트 모달 (prompt 대체) ──
+function openTextModal() {
+  const modal = document.getElementById('textModal');
+  const input = document.getElementById('textInput');
+  input.value = '';
+  modal.classList.add('active');
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeTextModal() {
+  document.getElementById('textModal').classList.remove('active');
+  pendingTextPos = null;
+}
+
+function confirmTextModal() {
+  const text = document.getElementById('textInput').value.trim();
+  closeTextModal();
+  if (text && pendingTextPos) {
+    const page = window.currentPage;
+    saveHistory();
+    getNotes(page).push({ type: 'text', x: pendingTextPos.x, y: pendingTextPos.y, text });
+    renderPage(page);
+  }
+  pendingTextPos = null;
+}
+
+// 모달에서 Enter 키 확인
+document.getElementById('textInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') confirmTextModal();
+  if (e.key === 'Escape') closeTextModal();
+});
+
+// ── 단축키 ──
 document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-    e.preventDefault();
-    undo();
-  }
-  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
-    e.preventDefault();
-    zoomIn();
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key === '-') {
-    e.preventDefault();
-    zoomOut();
-  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomIn(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === '-') { e.preventDefault(); zoomOut(); }
 });
 
-// ── 저장 (전체 페이지 노트 저장) ──
+// ── 저장 ──
 function saveToBrowser() {
   localStorage.setItem('pdfNotes', JSON.stringify(pageNotes));
   alert('저장 완료!');
 }
 
-// ── 불러오기 (전체 페이지 노트 복원) ──
+// ── 불러오기 ──
 function importJSON() {
   const json = prompt('JSON 입력:');
   if (json) {
@@ -184,12 +205,12 @@ function importJSON() {
   }
 }
 
-// ── 내보내기 (전체 페이지 노트) ──
+// ── 내보내기 ──
 function exportJSON() {
   alert(JSON.stringify(pageNotes));
 }
 
-// ── 현재 페이지 노트만 초기화 ──
+// ── 현재 페이지 초기화 ──
 function clearNotes() {
   saveHistory();
   pageNotes[window.currentPage] = [];

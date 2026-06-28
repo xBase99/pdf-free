@@ -22,13 +22,11 @@
       <button onclick="setTool('highlight')">형광펜</button>
       <input type="color" id="highlightColor" value="#ffff00" />
       <button onclick="setTool('text')">텍스트</button>
-
       <button onclick="saveToBrowser()">저장</button>
       <button onclick="exportJSON()">내보내기</button>
       <button onclick="importJSON()">불러오기</button>
       <button onclick="undo()">↩ 실행취소</button>
       <button onclick="clearNotes()">초기화</button>
-
       <!-- 배율 조절 -->
       <button onclick="zoomOut()">🔍−</button>
       <select id="zoomSelect" onchange="setZoom(this.value)">
@@ -43,7 +41,6 @@
         <option value="3.0">300%</option>
       </select>
       <button onclick="zoomIn()">🔍+</button>
-
       <!-- 페이지 이동 -->
       <button onclick="prevPage()">◀ 이전</button>
       <span id="pageInfo"></span>
@@ -52,22 +49,17 @@
 
     <!-- 레이아웃 -->
     <div class="layout">
-      <!-- 사이드바 -->
+      <!-- 사이드바 (PC 전용 - 모바일에서는 CSS로 숨김) -->
       <div class="sidebar">
         <div class="panel">
           <strong>도구 설명</strong>
           <p>형광펜: 클릭 위치에 하이라이트 박스</p>
           <p>텍스트: 클릭 후 텍스트 입력</p>
         </div>
-
         <div class="panel">
           <strong>Trip.com × Rail Europe</strong>
           <div class="trip-ad-box">
-            <a
-              href="https://www.trip.com/t/zGQ0YJsVIV2"
-              target="_blank"
-              rel="noopener"
-            >
+            <a href="https://www.trip.com/t/zGQ0YJsVIV2" target="_blank" rel="noopener">
               <img src="trip_ad_banner.png" alt="Trip Ad" class="trip-banner" />
             </a>
           </div>
@@ -82,13 +74,24 @@
 
     <!-- 푸터 -->
     <div class="footer">
-      PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export
-      지원
+      PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export 지원
+    </div>
+
+    <!-- 텍스트 입력 모달 (prompt 대체 - 모바일 호환) -->
+    <div class="modal-overlay" id="textModal">
+      <div class="modal-box">
+        <p>텍스트 입력:</p>
+        <input type="text" id="textInput" placeholder="내용을 입력하세요" />
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeTextModal()">취소</button>
+          <button class="btn-confirm" onclick="confirmTextModal()">확인</button>
+        </div>
+      </div>
     </div>
 
     <!-- 앱 로직 -->
     <script src="app.js"></script>
-    <!-- 광고 삽입 스크립트 (하단 배너 등) -->
+    <!-- 광고 (하단에만 삽입) -->
     <script src="ads.js"></script>
 
     <!-- 서비스 워커 등록 -->
@@ -99,7 +102,6 @@
         });
       }
 
-      // 페이지 네비게이션용 함수 (app.js에서 사용하는 전역 변수와 연결)
       function prevPage() {
         if (!window.pdfDoc) return;
         if (window.currentPage <= 1) return;
@@ -118,14 +120,10 @@
 
       function updatePageInfo() {
         const el = document.getElementById('pageInfo');
-        if (!window.pdfDoc) {
-          el.textContent = '';
-          return;
-        }
+        if (!window.pdfDoc) { el.textContent = ''; return; }
         el.textContent = `페이지 ${window.currentPage} / ${window.pdfDoc.numPages}`;
       }
 
-      // PDF 로드 후 페이지 정보 갱신을 위해 app.js에서 호출할 수 있게 헬퍼 노출
       window.updatePageInfo = updatePageInfo;
     </script>
   </body>
