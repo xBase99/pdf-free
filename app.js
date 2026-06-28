@@ -1,40 +1,116 @@
-// 6개월 제한
-const installKey = 'installDate';
-let installDate = localStorage.getItem(installKey);
+let pdfDoc = null;
+let currentPage = 1;
+let tool = null;
+let notes = [];
 
-if (!installDate) {
-  installDate = new Date().toISOString();
-  localStorage.setItem(installKey, installDate);
+// PDF 로드
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const url = URL.createObjectURL(file);
+  loadPDF(url);
+});
+
+function loadPDF(url) {
+  pdfjsLib.getDocument(url).promise.then((pdf) => {
+    pdfDoc = pdf;
+    renderPage(1);
+  });
 }
 
-function isExpired() {
-  const install = new Date(localStorage.getItem('installDate'));
-  const now = new Date();
-  const diff = now - install;
-  const days = diff / (1000 * 60 * 60 * 24);
-  return days > 180; // 6개월
+// 페이지 렌더링
+function renderPage(num) {
+  pdfDoc.getPage(num).then((page) => {
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    page.render({ canvasContext: ctx, viewport });
+
+    renderNotes();
+  });
 }
 
-if (isExpired()) {
-  alert('무료 사용기간(6개월)이 만료되었습니다. 유료 버전을 이용해주세요.');
+// 툴 선택
+function setTool(t) {
+  tool = t;
 }
 
-// 무료 기능: 주석 추가/삭제/이동/Undo
-let annotations = [];
-let history = [];
+// 캔버스 클릭 이벤트
+document.getElementById('pdfCanvas').addEventListener('click', (e) => {
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
 
-function saveState() {
-  history.push(JSON.stringify(annotations));
+  if (tool === 'highlight') {
+    notes.push({
+      type: 'highlight',
+      x,
+      y,
+      color: document.getElementById('highlightColor').value,
+    });
+  }
+
+  if (tool === 'text') {
+    const text = prompt('텍스트 입력:');
+    if (text) {
+      notes.push({
+        type: 'text',
+        x,
+        y,
+        text,
+      });
+    }
+  }
+
+  renderNotes();
+});
+
+// 노트 렌더링
+function renderNotes() {
+  const canvas = document.getElementById('pdfCanvas');
+  const ctx = canvas.getContext('2d');
+
+  renderPage(currentPage);
+
+  notes.forEach((n) => {
+    if (n.type === 'highlight') {
+      ctx.fillStyle = n.color;
+      ctx.fillRect(n.x - 40, n.y - 10, 80, 20);
+    }
+
+    if (n.type === 'text') {
+      ctx.fillStyle = 'red';
+      ctx.font = '16px Arial';
+      ctx.fillText(n.text, n.x, n.y);
+    }
+  });
 }
 
-function undo() {
-  if (history.length > 0) {
-    annotations = JSON.parse(history.pop());
-    renderAnnotations();
+// 저장
+function saveToBrowser() {
+  localStorage.setItem('pdfNotes', JSON.stringify(notes));
+  alert('저장 완료!');
+}
+
+// 불러오기
+function importJSON() {
+  const json = prompt('JSON 입력:');
+  if (json) {
+    notes = JSON.parse(json);
+    renderNotes();
   }
 }
 
-function deleteAnnotation(id) {
-  annotations = annotations.filter((a) => a.id !== id);
-  renderAnnotations();
+// 내보내기
+function exportJSON() {
+  alert(JSON.stringify(notes));
+}
+
+// 초기화
+function clearNotes() {
+  notes = [];
+  renderNotes();
 }
