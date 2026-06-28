@@ -1,7 +1,7 @@
-const isPremium = false; // 무료 버전 → 광고 표시
+const isPremium = false;  // 무료 버전 → 광고 표시
 
-const TRIP_AD_LINK = 'https://www.trip.com/t/zGQ0YJsVIV2';
-const TRIP_AD_IMG = 'trip_ad_banner.png';
+const TRIP_AD_LINK = "https://www.trip.com/t/zGQ0YJsVIV2";
+const TRIP_AD_IMG = "trip_ad_banner.png";
 
 function insertAds() {
   if (isPremium) return;
@@ -14,7 +14,7 @@ function insertAds() {
     </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', adHTML);
+  document.body.insertAdjacentHTML("beforeend", adHTML);
 }
 
-window.addEventListener('DOMContentLoaded', insertAds);
+window.addEventListener("DOMContentLoaded", insertAds);
