@@ -4,52 +4,92 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PDF Annotator v3.0</title>
-
-    <!-- PDF.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
-
-    <!-- 스타일 -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- 상단 바 -->
+
+    <!-- ── 상단 바 ── -->
     <div class="top-bar">
       <span class="app-title">PDF Annotator v3.0</span>
-      <input type="file" id="fileInput" accept="application/pdf" />
-      <button onclick="setTool('highlight')">형광펜</button>
-      <input type="color" id="highlightColor" value="#ffff00" />
-      <button onclick="setTool('text')">텍스트</button>
-      <button onclick="saveToBrowser()">저장</button>
-      <button onclick="exportJSON()">내보내기</button>
-      <button onclick="importJSON()">불러오기</button>
-      <button onclick="undo()">↩ 실행취소</button>
-      <button onclick="clearNotes()">초기화</button>
-      <!-- 배율 조절 -->
-      <button onclick="zoomOut()">🔍−</button>
-      <select id="zoomSelect" onchange="setZoom(this.value)">
-        <option value="0.5">50%</option>
-        <option value="0.75">75%</option>
-        <option value="1.0">100%</option>
-        <option value="1.25">125%</option>
-        <option value="1.5" selected>150%</option>
-        <option value="1.75">175%</option>
-        <option value="2.0">200%</option>
-        <option value="2.5">250%</option>
-        <option value="3.0">300%</option>
-      </select>
-      <button onclick="zoomIn()">🔍+</button>
-      <!-- 페이지 이동 -->
-      <button onclick="prevPage()">◀ 이전</button>
-      <span id="pageInfo"></span>
-      <button onclick="nextPage()">다음 ▶</button>
+
+      <!-- PC: 항상 표시 -->
+      <div class="toolbar-pc">
+        <input type="file" id="fileInput" accept="application/pdf" />
+        <button onclick="setTool('highlight')">형광펜</button>
+        <input type="color" id="highlightColor" value="#ffff00" />
+        <button onclick="setTool('text')">텍스트</button>
+        <button onclick="saveToBrowser()">저장</button>
+        <button onclick="exportJSON()">내보내기</button>
+        <button onclick="importJSON()">불러오기</button>
+        <button onclick="undo()">↩ 실행취소</button>
+        <button onclick="clearNotes()">초기화</button>
+        <button onclick="zoomOut()">🔍−</button>
+        <select id="zoomSelect" onchange="setZoom(this.value)">
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+          <option value="1.0">100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5" selected>150%</option>
+          <option value="1.75">175%</option>
+          <option value="2.0">200%</option>
+          <option value="2.5">250%</option>
+          <option value="3.0">300%</option>
+        </select>
+        <button onclick="zoomIn()">🔍+</button>
+        <button onclick="prevPage()">◀</button>
+        <span id="pageInfo"></span>
+        <button onclick="nextPage()">▶</button>
+      </div>
+
+      <!-- 모바일: 항상 표시되는 핵심 버튼 + 햄버거 -->
+      <div class="toolbar-mobile">
+        <input type="file" id="fileInputMobile" accept="application/pdf" />
+        <button onclick="prevPage()">◀</button>
+        <span id="pageInfoMobile"></span>
+        <button onclick="nextPage()">▶</button>
+        <button class="hamburger-btn" onclick="toggleMenu()" aria-label="메뉴">☰</button>
+      </div>
     </div>
 
-    <!-- 레이아웃 -->
+    <!-- ── 모바일 풀다운 메뉴 ── -->
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="dropdown-inner">
+        <div class="dropdown-row">
+          <button onclick="setTool('highlight'); closeMenu()">🖊 형광펜</button>
+          <input type="color" id="highlightColorMobile" value="#ffff00" />
+          <button onclick="setTool('text'); closeMenu()">📝 텍스트</button>
+        </div>
+        <div class="dropdown-row">
+          <button onclick="zoomOut()">🔍−</button>
+          <select id="zoomSelectMobile" onchange="setZoom(this.value)">
+            <option value="0.5">50%</option>
+            <option value="0.75">75%</option>
+            <option value="1.0">100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5" selected>150%</option>
+            <option value="1.75">175%</option>
+            <option value="2.0">200%</option>
+            <option value="2.5">250%</option>
+            <option value="3.0">300%</option>
+          </select>
+          <button onclick="zoomIn()">🔍+</button>
+        </div>
+        <div class="dropdown-row">
+          <button onclick="undo(); closeMenu()">↩ 실행취소</button>
+          <button onclick="clearNotes(); closeMenu()">🗑 초기화</button>
+        </div>
+        <div class="dropdown-row">
+          <button onclick="saveToBrowser(); closeMenu()">💾 저장</button>
+          <button onclick="exportJSON(); closeMenu()">📤 내보내기</button>
+          <button onclick="importJSON(); closeMenu()">📥 불러오기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 레이아웃 ── -->
     <div class="layout">
-      <!-- 사이드바 (PC 전용 - 모바일에서는 CSS로 숨김) -->
       <div class="sidebar">
         <div class="panel">
           <strong>도구 설명</strong>
@@ -65,19 +105,17 @@
           </div>
         </div>
       </div>
-
-      <!-- 메인 영역 -->
       <div class="main-area">
         <canvas id="pdfCanvas"></canvas>
       </div>
     </div>
 
-    <!-- 푸터 -->
+    <!-- ── 푸터 ── -->
     <div class="footer">
       PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export 지원
     </div>
 
-    <!-- 텍스트 입력 모달 (prompt 대체 - 모바일 호환) -->
+    <!-- ── 텍스트 입력 모달 ── -->
     <div class="modal-overlay" id="textModal">
       <div class="modal-box">
         <p>텍스트 입력:</p>
@@ -89,12 +127,9 @@
       </div>
     </div>
 
-    <!-- 앱 로직 -->
     <script src="app.js"></script>
-    <!-- 광고 (하단에만 삽입) -->
     <script src="ads.js"></script>
 
-    <!-- 서비스 워커 등록 -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -102,6 +137,45 @@
         });
       }
 
+      // ── 햄버거 메뉴 토글 ──
+      function toggleMenu() {
+        const menu = document.getElementById('dropdownMenu');
+        menu.classList.toggle('open');
+      }
+      function closeMenu() {
+        document.getElementById('dropdownMenu').classList.remove('open');
+      }
+      // 메뉴 밖 터치/클릭 시 닫기
+      document.addEventListener('click', (e) => {
+        const menu = document.getElementById('dropdownMenu');
+        const btn = document.querySelector('.hamburger-btn');
+        if (menu.classList.contains('open') &&
+            !menu.contains(e.target) && e.target !== btn) {
+          closeMenu();
+        }
+      });
+
+      // ── 모바일 파일 입력 연동 ──
+      document.getElementById('fileInputMobile').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        loadPDF(url);
+      });
+
+      // ── 모바일 색상 선택 연동 ──
+      document.getElementById('highlightColorMobile').addEventListener('input', (e) => {
+        document.getElementById('highlightColor').value = e.target.value;
+      });
+
+      // ── 모바일 배율 드롭다운 연동 ──
+      document.getElementById('zoomSelectMobile').addEventListener('change', (e) => {
+        setZoom(e.target.value);
+        // PC 드롭다운도 동기화
+        document.getElementById('zoomSelect').value = e.target.value;
+      });
+
+      // ── 페이지 이동 ──
       function prevPage() {
         if (!window.pdfDoc) return;
         if (window.currentPage <= 1) return;
@@ -109,7 +183,6 @@
         renderPage(window.currentPage);
         updatePageInfo();
       }
-
       function nextPage() {
         if (!window.pdfDoc) return;
         if (window.currentPage >= window.pdfDoc.numPages) return;
@@ -117,13 +190,15 @@
         renderPage(window.currentPage);
         updatePageInfo();
       }
-
       function updatePageInfo() {
-        const el = document.getElementById('pageInfo');
-        if (!window.pdfDoc) { el.textContent = ''; return; }
-        el.textContent = `페이지 ${window.currentPage} / ${window.pdfDoc.numPages}`;
+        const text = window.pdfDoc
+          ? `${window.currentPage} / ${window.pdfDoc.numPages}`
+          : '';
+        const pc = document.getElementById('pageInfo');
+        const mo = document.getElementById('pageInfoMobile');
+        if (pc) pc.textContent = text;
+        if (mo) mo.textContent = text;
       }
-
       window.updatePageInfo = updatePageInfo;
     </script>
   </body>
