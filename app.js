@@ -1,3 +1,8 @@
+· JS
+// ── PDF.js Worker 명시 설정 (GitHub Pages 등 HTTPS 환경 필수) ──
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
 window.pdfDoc = null;
 window.currentPage = 1;
 window.currentScale = 1.5;
