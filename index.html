@@ -10,60 +10,22 @@
   </head>
   <body>
 
-    <!-- ── 상단 바 ── -->
-    <div class="top-bar">
-      <span class="app-title">PDF Annotator v3.0</span>
+    <!-- ── 헤더 전체 (상단바 + 풀다운을 하나의 fixed 블록으로) ── -->
+    <div class="header-wrap">
 
-      <!-- PC: 항상 표시 -->
-      <div class="toolbar-pc">
-        <input type="file" id="fileInput" accept="application/pdf" />
-        <button onclick="setTool('highlight')">형광펜</button>
-        <input type="color" id="highlightColor" value="#ffff00" />
-        <button onclick="setTool('text')">텍스트</button>
-        <button onclick="saveToBrowser()">저장</button>
-        <button onclick="exportJSON()">내보내기</button>
-        <button onclick="importJSON()">불러오기</button>
-        <button onclick="undo()">↩ 실행취소</button>
-        <button onclick="clearNotes()">초기화</button>
-        <button onclick="zoomOut()">🔍−</button>
-        <select id="zoomSelect" onchange="setZoom(this.value)">
-          <option value="0.5">50%</option>
-          <option value="0.75">75%</option>
-          <option value="1.0">100%</option>
-          <option value="1.25">125%</option>
-          <option value="1.5" selected>150%</option>
-          <option value="1.75">175%</option>
-          <option value="2.0">200%</option>
-          <option value="2.5">250%</option>
-          <option value="3.0">300%</option>
-        </select>
-        <button onclick="zoomIn()">🔍+</button>
-        <button onclick="prevPage()">◀</button>
-        <span id="pageInfo"></span>
-        <button onclick="nextPage()">▶</button>
-      </div>
+      <!-- 상단 바 -->
+      <div class="top-bar">
+        <span class="app-title">PDF Annotator v3.0</span>
 
-      <!-- 모바일: 항상 표시되는 핵심 버튼 + 햄버거 -->
-      <div class="toolbar-mobile">
-        <input type="file" id="fileInputMobile" accept="application/pdf" />
-        <button onclick="prevPage()">◀</button>
-        <span id="pageInfoMobile"></span>
-        <button onclick="nextPage()">▶</button>
-        <button class="hamburger-btn" onclick="toggleMenu()" aria-label="메뉴">☰</button>
-      </div>
-    </div>
-
-    <!-- ── 모바일 풀다운 메뉴 ── -->
-    <div class="dropdown-menu" id="dropdownMenu">
-      <div class="dropdown-inner">
-        <div class="dropdown-row">
-          <button onclick="setTool('highlight'); closeMenu()">🖊 형광펜</button>
-          <input type="color" id="highlightColorMobile" value="#ffff00" />
-          <button onclick="setTool('text'); closeMenu()">📝 텍스트</button>
-        </div>
-        <div class="dropdown-row">
+        <!-- PC 툴바 -->
+        <div class="toolbar-pc">
+          <label class="file-btn">파일 선택 <input type="file" id="fileInput" accept="application/pdf" /></label>
+          <button onclick="setTool('highlight')">🖊 형광펜</button>
+          <input type="color" id="highlightColor" value="#ffff00" title="형광펜 색상" />
+          <button onclick="setTool('text')">📝 텍스트</button>
+          <span class="sep"></span>
           <button onclick="zoomOut()">🔍−</button>
-          <select id="zoomSelectMobile" onchange="setZoom(this.value)">
+          <select id="zoomSelect" onchange="setZoom(this.value)">
             <option value="0.5">50%</option>
             <option value="0.75">75%</option>
             <option value="1.0">100%</option>
@@ -75,25 +37,72 @@
             <option value="3.0">300%</option>
           </select>
           <button onclick="zoomIn()">🔍+</button>
+          <span class="sep"></span>
+          <button onclick="prevPage()">◀</button>
+          <span id="pageInfo" class="page-info"></span>
+          <button onclick="nextPage()">▶</button>
+          <span class="sep"></span>
+          <button onclick="undo()">↩ 실행취소</button>
+          <button onclick="clearNotes()">🗑 초기화</button>
+          <button onclick="saveToBrowser()">💾 저장</button>
+          <button onclick="exportJSON()">📤 내보내기</button>
+          <button onclick="importJSON()">📥 불러오기</button>
         </div>
-        <div class="dropdown-row">
-          <button onclick="undo(); closeMenu()">↩ 실행취소</button>
-          <button onclick="clearNotes(); closeMenu()">🗑 초기화</button>
-        </div>
-        <div class="dropdown-row">
-          <button onclick="saveToBrowser(); closeMenu()">💾 저장</button>
-          <button onclick="exportJSON(); closeMenu()">📤 내보내기</button>
-          <button onclick="importJSON(); closeMenu()">📥 불러오기</button>
+
+        <!-- 모바일 툴바 -->
+        <div class="toolbar-mobile">
+          <label class="file-btn-mobile">📂 <input type="file" id="fileInputMobile" accept="application/pdf" /></label>
+          <button onclick="prevPage()">◀</button>
+          <span id="pageInfoMobile" class="page-info"></span>
+          <button onclick="nextPage()">▶</button>
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
         </div>
       </div>
-    </div>
+
+      <!-- 모바일 풀다운 메뉴 (header-wrap 안에 있어야 올바르게 배치됨) -->
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dropdown-inner">
+          <div class="dropdown-row">
+            <button onclick="setTool('highlight'); closeMenu()">🖊 형광펜</button>
+            <input type="color" id="highlightColorMobile" value="#ffff00" />
+            <button onclick="setTool('text'); closeMenu()">📝 텍스트</button>
+          </div>
+          <div class="dropdown-row">
+            <button onclick="zoomOut()">🔍−</button>
+            <select id="zoomSelectMobile" onchange="setZoom(this.value)">
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
+              <option value="1.0">100%</option>
+              <option value="1.25">125%</option>
+              <option value="1.5" selected>150%</option>
+              <option value="1.75">175%</option>
+              <option value="2.0">200%</option>
+              <option value="2.5">250%</option>
+              <option value="3.0">300%</option>
+            </select>
+            <button onclick="zoomIn()">🔍+</button>
+          </div>
+          <div class="dropdown-row">
+            <button onclick="undo(); closeMenu()">↩ 실행취소</button>
+            <button onclick="clearNotes(); closeMenu()">🗑 초기화</button>
+          </div>
+          <div class="dropdown-row">
+            <button onclick="saveToBrowser(); closeMenu()">💾 저장</button>
+            <button onclick="exportJSON(); closeMenu()">📤 내보내기</button>
+            <button onclick="importJSON(); closeMenu()">📥 불러오기</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.header-wrap -->
 
     <!-- ── 레이아웃 ── -->
     <div class="layout">
+      <!-- 사이드바: PC에만 표시, 광고 포함 -->
       <div class="sidebar">
         <div class="panel">
           <strong>도구 설명</strong>
-          <p>형광펜: 클릭 위치에 하이라이트 박스</p>
+          <p>형광펜: 클릭 위치에 하이라이트</p>
           <p>텍스트: 클릭 후 텍스트 입력</p>
         </div>
         <div class="panel">
@@ -105,6 +114,8 @@
           </div>
         </div>
       </div>
+
+      <!-- 메인 영역 -->
       <div class="main-area">
         <canvas id="pdfCanvas"></canvas>
       </div>
@@ -114,6 +125,8 @@
     <div class="footer">
       PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export 지원
     </div>
+
+    <!-- ── 하단 광고: 모바일에서만 표시 (ads.js가 삽입) ── -->
 
     <!-- ── 텍스트 입력 모달 ── -->
     <div class="modal-overlay" id="textModal">
@@ -137,15 +150,13 @@
         });
       }
 
-      // ── 햄버거 메뉴 토글 ──
+      // ── 햄버거 메뉴 ──
       function toggleMenu() {
-        const menu = document.getElementById('dropdownMenu');
-        menu.classList.toggle('open');
+        document.getElementById('dropdownMenu').classList.toggle('open');
       }
       function closeMenu() {
         document.getElementById('dropdownMenu').classList.remove('open');
       }
-      // 메뉴 밖 터치/클릭 시 닫기
       document.addEventListener('click', (e) => {
         const menu = document.getElementById('dropdownMenu');
         const btn = document.querySelector('.hamburger-btn');
@@ -158,46 +169,40 @@
       // ── 모바일 파일 입력 연동 ──
       document.getElementById('fileInputMobile').addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        loadPDF(url);
+        if (file) loadPDF(URL.createObjectURL(file));
       });
 
-      // ── 모바일 색상 선택 연동 ──
+      // ── 모바일 색상 연동 ──
       document.getElementById('highlightColorMobile').addEventListener('input', (e) => {
         document.getElementById('highlightColor').value = e.target.value;
       });
 
-      // ── 모바일 배율 드롭다운 연동 ──
+      // ── 모바일 배율 연동 ──
       document.getElementById('zoomSelectMobile').addEventListener('change', (e) => {
         setZoom(e.target.value);
-        // PC 드롭다운도 동기화
         document.getElementById('zoomSelect').value = e.target.value;
       });
 
       // ── 페이지 이동 ──
       function prevPage() {
-        if (!window.pdfDoc) return;
-        if (window.currentPage <= 1) return;
+        if (!window.pdfDoc || window.currentPage <= 1) return;
         window.currentPage--;
         renderPage(window.currentPage);
         updatePageInfo();
       }
       function nextPage() {
-        if (!window.pdfDoc) return;
-        if (window.currentPage >= window.pdfDoc.numPages) return;
+        if (!window.pdfDoc || window.currentPage >= window.pdfDoc.numPages) return;
         window.currentPage++;
         renderPage(window.currentPage);
         updatePageInfo();
       }
       function updatePageInfo() {
         const text = window.pdfDoc
-          ? `${window.currentPage} / ${window.pdfDoc.numPages}`
-          : '';
-        const pc = document.getElementById('pageInfo');
-        const mo = document.getElementById('pageInfoMobile');
-        if (pc) pc.textContent = text;
-        if (mo) mo.textContent = text;
+          ? `${window.currentPage} / ${window.pdfDoc.numPages}` : '';
+        ['pageInfo','pageInfoMobile'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = text;
+        });
       }
       window.updatePageInfo = updatePageInfo;
     </script>

@@ -1,7 +1,18 @@
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
   background: #f5f5f5;
+}
+
+/* ══════════════════════════════
+   헤더 래퍼 (상단바 + 풀다운 묶음)
+   position:relative 로 풀다운 기준점
+══════════════════════════════ */
+.header-wrap {
+  position: relative;
+  z-index: 200;
 }
 
 /* ── 상단 바 ── */
@@ -13,9 +24,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
-  z-index: 200;
-  flex-wrap: nowrap; /* 절대 줄바꿈 없음 */
+  overflow: hidden;        /* 절대 줄바꿈·넘침 없음 */
 }
 
 .app-title {
@@ -25,33 +34,60 @@ body {
   flex-shrink: 0;
 }
 
-.top-bar button {
-  padding: 4px 10px;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  white-space: nowrap;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.top-bar select {
-  font-size: 13px;
-  padding: 3px 4px;
-  flex-shrink: 0;
-}
-
 /* PC 툴바 */
 .toolbar-pc {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: nowrap;
+  overflow: hidden;
 }
 
-.toolbar-pc input[type="file"] {
+.toolbar-pc button,
+.toolbar-mobile button {
+  padding: 4px 9px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
   font-size: 12px;
-  max-width: 160px;
+  flex-shrink: 0;
+}
+
+.toolbar-pc select {
+  font-size: 12px;
+  padding: 3px 2px;
+  flex-shrink: 0;
+}
+
+/* 파일선택 버튼 (label로 감싸서 스타일) */
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  background: #fff;
+  color: #333;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.file-btn input[type="file"] { display: none; }
+
+/* 구분선 */
+.sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.page-info {
+  font-size: 12px;
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: center;
 }
 
 /* 모바일 툴바 (기본 숨김) */
@@ -60,7 +96,20 @@ body {
   align-items: center;
   gap: 6px;
   margin-left: auto;
+  flex-shrink: 0;
 }
+
+.file-btn-mobile {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.file-btn-mobile input[type="file"] { display: none; }
 
 .hamburger-btn {
   font-size: 20px !important;
@@ -69,18 +118,19 @@ body {
   color: #fff !important;
 }
 
-/* ── 풀다운 메뉴 ── */
+/* ── 풀다운 메뉴 ──
+   header-wrap 기준 absolute → top-bar 바로 아래 붙음
+   기본 숨김, .open 클래스로만 표시
+── */
 .dropdown-menu {
   display: none;
   position: absolute;
-  top: 44px;
+  top: 44px;   /* top-bar 높이 */
   left: 0;
   right: 0;
   background: #1a5f9e;
-  z-index: 999;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  padding: 8px 12px;
-  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  padding: 10px 12px;
 }
 .dropdown-menu.open {
   display: block;
@@ -109,18 +159,18 @@ body {
   color: #fff;
   white-space: nowrap;
 }
-
 .dropdown-row button:active {
   background: rgba(255,255,255,0.35);
 }
-
 .dropdown-row select {
   font-size: 14px;
   padding: 6px 4px;
   border-radius: 4px;
 }
 
-/* ── 레이아웃 ── */
+/* ══════════════════════════════
+   레이아웃
+══════════════════════════════ */
 .layout {
   display: flex;
   height: calc(100vh - 44px);
@@ -133,41 +183,43 @@ body {
   background: #f0f0f0;
   border-right: 1px solid #ccc;
   padding: 8px;
-  box-sizing: border-box;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .panel {
-  border: 1px solid #000;
+  border: 1px solid #ccc;
   margin-bottom: 10px;
-  padding: 6px;
+  padding: 8px;
   background: #fff;
+  border-radius: 4px;
 }
 
 .trip-ad-box {
-  border: 1px solid #000;
   height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .trip-banner {
   max-width: 100%;
   max-height: 100%;
+  border-radius: 4px;
 }
 
 /* ── 메인 영역 ── */
 .main-area {
   flex: 1;
   padding: 8px;
-  box-sizing: border-box;
   overflow-y: auto;
 }
 
 #pdfCanvas {
-  border: 1px solid #000;
+  border: 1px solid #ccc;
   background: #fff;
+  display: block;
   touch-action: none;
 }
 
@@ -177,21 +229,21 @@ body {
   background: #eee;
   text-align: center;
   font-size: 12px;
+  border-top: 1px solid #ddd;
 }
 
-/* ── 하단 광고 ── */
+/* ── 하단 광고 (ads.js 삽입 대상) ── */
 .ad-section {
-  position: static;
   width: 100%;
   text-align: center;
   padding: 8px 0;
   background: #f5f5f5;
   border-top: 1px solid #ddd;
-  box-sizing: border-box;
 }
 .ad-section img {
   max-width: 100%;
   height: auto;
+  border-radius: 4px;
 }
 
 /* ── 텍스트 입력 모달 ── */
@@ -204,9 +256,7 @@ body {
   align-items: center;
   justify-content: center;
 }
-.modal-overlay.active {
-  display: flex;
-}
+.modal-overlay.active { display: flex; }
 .modal-box {
   background: #fff;
   border-radius: 8px;
@@ -214,14 +264,10 @@ body {
   width: 280px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
-.modal-box p {
-  margin: 0 0 10px;
-  font-weight: bold;
-}
+.modal-box p { margin: 0 0 10px; font-weight: bold; }
 .modal-box input {
   width: 100%;
   padding: 8px;
-  box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 15px;
@@ -242,14 +288,17 @@ body {
 .modal-actions .btn-confirm { background: #1e73be; color: #fff; }
 .modal-actions .btn-cancel  { background: #ddd; }
 
-/* ── 모바일 반응형 ── */
+/* ══════════════════════════════
+   모바일 반응형 (≤640px)
+══════════════════════════════ */
 @media (max-width: 640px) {
-  .toolbar-pc  { display: none; }
+  /* PC 툴바 숨기고 모바일 툴바 표시 */
+  .toolbar-pc     { display: none; }
   .toolbar-mobile { display: flex; }
+
+  /* 사이드바 숨김 → 광고도 사이드바에선 미표시 */
   .sidebar { display: none; }
 
-  .layout {
-    /* 드롭다운이 열려도 레이아웃 높이는 고정 */
-    height: calc(100vh - 44px);
-  }
+  /* 레이아웃 높이 유지 */
+  .layout { height: calc(100vh - 44px); }
 }
