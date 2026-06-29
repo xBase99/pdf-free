@@ -10,16 +10,15 @@
   </head>
   <body>
 
-    <!-- ── 헤더 전체 (상단바 + 풀다운을 하나의 fixed 블록으로) ── -->
+    <!-- ★ header-wrap: 상단바 + 풀다운을 하나로 묶어서 position 기준점 통일 -->
     <div class="header-wrap">
 
-      <!-- 상단 바 -->
       <div class="top-bar">
         <span class="app-title">PDF Annotator v3.0</span>
 
         <!-- PC 툴바 -->
         <div class="toolbar-pc">
-          <label class="file-btn">파일 선택 <input type="file" id="fileInput" accept="application/pdf" /></label>
+          <label class="file-btn">파일 선택<input type="file" id="fileInput" accept="application/pdf" /></label>
           <button onclick="setTool('highlight')">🖊 형광펜</button>
           <input type="color" id="highlightColor" value="#ffff00" title="형광펜 색상" />
           <button onclick="setTool('text')">📝 텍스트</button>
@@ -51,7 +50,7 @@
 
         <!-- 모바일 툴바 -->
         <div class="toolbar-mobile">
-          <label class="file-btn-mobile">📂 <input type="file" id="fileInputMobile" accept="application/pdf" /></label>
+          <label class="file-btn-mobile">📂<input type="file" id="fileInputMobile" accept="application/pdf" /></label>
           <button onclick="prevPage()">◀</button>
           <span id="pageInfoMobile" class="page-info"></span>
           <button onclick="nextPage()">▶</button>
@@ -59,7 +58,7 @@
         </div>
       </div>
 
-      <!-- 모바일 풀다운 메뉴 (header-wrap 안에 있어야 올바르게 배치됨) -->
+      <!-- ★ 풀다운 메뉴: header-wrap 안에 있어야 absolute 위치가 top-bar 바로 아래 -->
       <div class="dropdown-menu" id="dropdownMenu">
         <div class="dropdown-inner">
           <div class="dropdown-row">
@@ -96,9 +95,8 @@
 
     </div><!-- /.header-wrap -->
 
-    <!-- ── 레이아웃 ── -->
+    <!-- 레이아웃 -->
     <div class="layout">
-      <!-- 사이드바: PC에만 표시, 광고 포함 -->
       <div class="sidebar">
         <div class="panel">
           <strong>도구 설명</strong>
@@ -114,21 +112,16 @@
           </div>
         </div>
       </div>
-
-      <!-- 메인 영역 -->
       <div class="main-area">
         <canvas id="pdfCanvas"></canvas>
       </div>
     </div>
 
-    <!-- ── 푸터 ── -->
     <div class="footer">
       PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export 지원
     </div>
 
-    <!-- ── 하단 광고: 모바일에서만 표시 (ads.js가 삽입) ── -->
-
-    <!-- ── 텍스트 입력 모달 ── -->
+    <!-- 텍스트 입력 모달 -->
     <div class="modal-overlay" id="textModal">
       <div class="modal-box">
         <p>텍스트 입력:</p>
@@ -150,7 +143,6 @@
         });
       }
 
-      // ── 햄버거 메뉴 ──
       function toggleMenu() {
         document.getElementById('dropdownMenu').classList.toggle('open');
       }
@@ -166,24 +158,18 @@
         }
       });
 
-      // ── 모바일 파일 입력 연동 ──
       document.getElementById('fileInputMobile').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) loadPDF(URL.createObjectURL(file));
       });
-
-      // ── 모바일 색상 연동 ──
       document.getElementById('highlightColorMobile').addEventListener('input', (e) => {
         document.getElementById('highlightColor').value = e.target.value;
       });
-
-      // ── 모바일 배율 연동 ──
       document.getElementById('zoomSelectMobile').addEventListener('change', (e) => {
         setZoom(e.target.value);
         document.getElementById('zoomSelect').value = e.target.value;
       });
 
-      // ── 페이지 이동 ──
       function prevPage() {
         if (!window.pdfDoc || window.currentPage <= 1) return;
         window.currentPage--;

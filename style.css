@@ -6,10 +6,7 @@ body {
   background: #f5f5f5;
 }
 
-/* ══════════════════════════════
-   헤더 래퍼 (상단바 + 풀다운 묶음)
-   position:relative 로 풀다운 기준점
-══════════════════════════════ */
+/* ── 헤더 래퍼: 풀다운의 position 기준점 ── */
 .header-wrap {
   position: relative;
   z-index: 200;
@@ -24,11 +21,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  overflow: hidden;        /* 절대 줄바꿈·넘침 없음 */
+  overflow: hidden;   /* 절대 줄바꿈 없음 */
 }
 
 .app-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   white-space: nowrap;
   flex-shrink: 0;
@@ -38,14 +35,13 @@ body {
 .toolbar-pc {
   display: flex;
   align-items: center;
-  gap: 5px;
-  flex-wrap: nowrap;
+  gap: 4px;
   overflow: hidden;
+  flex: 1;
 }
 
-.toolbar-pc button,
-.toolbar-mobile button {
-  padding: 4px 9px;
+.toolbar-pc button {
+  padding: 3px 8px;
   border: none;
   border-radius: 3px;
   cursor: pointer;
@@ -56,15 +52,14 @@ body {
 
 .toolbar-pc select {
   font-size: 12px;
-  padding: 3px 2px;
+  padding: 2px;
   flex-shrink: 0;
 }
 
-/* 파일선택 버튼 (label로 감싸서 스타일) */
 .file-btn {
   display: inline-flex;
   align-items: center;
-  padding: 4px 9px;
+  padding: 3px 8px;
   background: #fff;
   color: #333;
   border-radius: 3px;
@@ -75,28 +70,38 @@ body {
 }
 .file-btn input[type="file"] { display: none; }
 
-/* 구분선 */
 .sep {
   width: 1px;
-  height: 20px;
-  background: rgba(255,255,255,0.3);
+  height: 18px;
+  background: rgba(255,255,255,0.35);
   flex-shrink: 0;
 }
 
 .page-info {
   font-size: 12px;
   white-space: nowrap;
-  min-width: 48px;
+  min-width: 44px;
   text-align: center;
+  color: #fff;
 }
 
-/* 모바일 툴바 (기본 숨김) */
+/* ── 모바일 툴바: 기본 숨김 ── */
 .toolbar-mobile {
   display: none;
   align-items: center;
   gap: 6px;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+.toolbar-mobile button {
+  padding: 4px 9px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
 }
 
 .file-btn-mobile {
@@ -106,34 +111,29 @@ body {
   background: rgba(255,255,255,0.2);
   color: #fff;
   border-radius: 3px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
 }
 .file-btn-mobile input[type="file"] { display: none; }
 
 .hamburger-btn {
-  font-size: 20px !important;
-  padding: 2px 10px !important;
-  background: rgba(255,255,255,0.2) !important;
-  color: #fff !important;
+  font-size: 18px !important;
+  background: rgba(255,255,255,0.25) !important;
 }
 
-/* ── 풀다운 메뉴 ──
-   header-wrap 기준 absolute → top-bar 바로 아래 붙음
-   기본 숨김, .open 클래스로만 표시
-── */
+/* ── 풀다운 메뉴: 기본 숨김 ── */
 .dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 44px;   /* top-bar 높이 */
+  display: none;          /* ★ 기본 숨김 */
+  position: absolute;     /* header-wrap 기준 */
+  top: 44px;
   left: 0;
   right: 0;
   background: #1a5f9e;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
   padding: 10px 12px;
 }
 .dropdown-menu.open {
-  display: block;
+  display: block;         /* ★ 클래스 추가시만 표시 */
 }
 
 .dropdown-inner {
@@ -141,14 +141,12 @@ body {
   flex-direction: column;
   gap: 8px;
 }
-
 .dropdown-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-
 .dropdown-row button {
   padding: 8px 14px;
   border: none;
@@ -168,9 +166,7 @@ body {
   border-radius: 4px;
 }
 
-/* ══════════════════════════════
-   레이아웃
-══════════════════════════════ */
+/* ── 레이아웃 ── */
 .layout {
   display: flex;
   height: calc(100vh - 44px);
@@ -186,7 +182,6 @@ body {
   overflow-y: auto;
   flex-shrink: 0;
 }
-
 .panel {
   border: 1px solid #ccc;
   margin-bottom: 10px;
@@ -194,7 +189,6 @@ body {
   background: #fff;
   border-radius: 4px;
 }
-
 .trip-ad-box {
   height: 120px;
   display: flex;
@@ -202,7 +196,6 @@ body {
   justify-content: center;
   overflow: hidden;
 }
-
 .trip-banner {
   max-width: 100%;
   max-height: 100%;
@@ -215,7 +208,6 @@ body {
   padding: 8px;
   overflow-y: auto;
 }
-
 #pdfCanvas {
   border: 1px solid #ccc;
   background: #fff;
@@ -232,7 +224,7 @@ body {
   border-top: 1px solid #ddd;
 }
 
-/* ── 하단 광고 (ads.js 삽입 대상) ── */
+/* ── 하단 광고 (모바일 ads.js 삽입) ── */
 .ad-section {
   width: 100%;
   text-align: center;
@@ -246,7 +238,7 @@ body {
   border-radius: 4px;
 }
 
-/* ── 텍스트 입력 모달 ── */
+/* ── 텍스트 모달 ── */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -288,17 +280,12 @@ body {
 .modal-actions .btn-confirm { background: #1e73be; color: #fff; }
 .modal-actions .btn-cancel  { background: #ddd; }
 
-/* ══════════════════════════════
-   모바일 반응형 (≤640px)
-══════════════════════════════ */
+/* ══════════════════════════════════
+   모바일 전용 (640px 이하)
+══════════════════════════════════ */
 @media (max-width: 640px) {
-  /* PC 툴바 숨기고 모바일 툴바 표시 */
-  .toolbar-pc     { display: none; }
-  .toolbar-mobile { display: flex; }
-
-  /* 사이드바 숨김 → 광고도 사이드바에선 미표시 */
-  .sidebar { display: none; }
-
-  /* 레이아웃 높이 유지 */
+  .toolbar-pc     { display: none !important; }   /* PC 툴바 완전 숨김 */
+  .toolbar-mobile { display: flex !important; }   /* 모바일 툴바 표시 */
+  .sidebar        { display: none !important; }   /* 사이드바+사이드 광고 숨김 */
   .layout { height: calc(100vh - 44px); }
 }

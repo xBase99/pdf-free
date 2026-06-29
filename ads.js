@@ -3,10 +3,9 @@ const isPremium = false;
 function insertAds() {
   if (isPremium) return;
 
-  // 모바일(640px 이하)에서만 하단 광고 삽입
-  // PC는 사이드바 광고만 사용
-  const isMobile = window.innerWidth <= 640;
-  if (!isMobile) return;
+  // 모바일(640px 이하)에서만 하단 광고 표시
+  // PC는 사이드바 광고 사용
+  if (window.innerWidth > 640) return;
 
   const adHTML = `
     <div class="ad-section">
