@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pdf-free-cache-v1';
+const CACHE_NAME = 'pdf-free-cache-v3';
 const URLS_TO_CACHE = [
   'index.html',
   'style.css',
