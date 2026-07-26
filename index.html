@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title data-i18n="appTitle">PDF Annotator v1.0</title>
+    <title data-i18n="appTitle">PDF Annotator v3.0</title>
 
     <!-- PDF.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -30,7 +30,7 @@
     <!-- ── 헤더 영역 ── -->
     <header class="header-wrap">
       <div class="top-bar">
-        <span class="app-title" data-i18n="appTitle">PDF Annotator v1.0</span>
+        <span class="app-title" data-i18n="appTitle">PDF Annotator v3.0</span>
         <div class="sep"></div>
 
         <!-- PC 상단 툴바 -->
@@ -190,7 +190,7 @@
         <canvas id="pdfCanvas"></canvas>
       </main>
 
-      <!-- 오른쪽 패널 -->
+      <!-- 오른쪽 패널 (광고 영역) -->
       <aside class="right-ads-panel">
         <div class="panel">
           <h4 data-i18n="toolDescTitle">도구 설명</h4>
@@ -198,13 +198,29 @@
           <p data-i18n="toolDesc2">텍스트: 클릭 후 텍스트 입력</p>
         </div>
 
+        <!-- 광고 1번 자리 -->
         <div class="trip-ad-item">
-          <img src="trip_ad_banner.png" alt="Trip.com Ad" />
+          <img src="trip_ad_banner.png" alt="Trip.com Ad 1" />
           <a
             href="https://www.trip.com/t/zGQ0YJsVIV2"
             target="_blank"
             rel="noopener"
             >Trip.com 예약하기</a
+          >
+        </div>
+
+        <!-- 광고 2번 자리 (추가됨) -->
+        <div class="trip-ad-item">
+          <img
+            src="https://v.tripcdn.com/post-banner/0101b12000ddn1q7sBD0F_R_800_400.jpg"
+            alt="Explore Hengqin - Trip.com"
+            style="width: 100%; border-radius: 6px"
+          />
+          <a
+            href="https://sg.trip.com/sale/w/oxpsorbijlbbhzzi/26hengqin.html?locale=en-sg&curr=sgd&promo_referer=3371_null_1&Allianceid=8796691&SID=320666228&trip_sub1=&trip_sub3=P18921289"
+            target="_blank"
+            rel="noopener"
+            >Explore Hengqin - Trip.com</a
           >
         </div>
       </aside>
