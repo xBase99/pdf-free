@@ -3,194 +3,256 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF Annotator v3.0</title>
+    <title data-i18n="appTitle">PDF Annotator v3.0</title>
+
+    <!-- PDF.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <link rel="manifest" href="manifest.json" />
+
+    <!-- CSS 연결 -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- ── 숨겨진 파일 입력 (PDF & JSON) ── -->
+    <input
+      type="file"
+      id="fileInput"
+      accept="application/pdf"
+      style="display: none"
+    />
+    <input
+      type="file"
+      id="jsonFileInput"
+      accept=".json"
+      style="display: none"
+      onchange="handleJSONFileSelect(event)"
+    />
 
-    <!-- ★ header-wrap: 상단바 + 풀다운을 하나로 묶어서 position 기준점 통일 -->
-    <div class="header-wrap">
-
+    <!-- ── 헤더 영역 ── -->
+    <header class="header-wrap">
       <div class="top-bar">
-        <span class="app-title">PDF Annotator v3.0</span>
+        <span class="app-title" data-i18n="appTitle">PDF Annotator v3.0</span>
+        <div class="sep"></div>
 
-        <!-- PC 툴바 -->
+        <!-- PC 상단 툴바 -->
         <div class="toolbar-pc">
-          <label class="file-btn">파일 선택<input type="file" id="fileInput" accept="application/pdf" /></label>
-          <button onclick="setTool('highlight')">🖊 형광펜</button>
-          <input type="color" id="highlightColor" value="#ffff00" title="형광펜 색상" />
-          <button onclick="setTool('text')">📝 텍스트</button>
-          <span class="sep"></span>
-          <button onclick="zoomOut()">🔍−</button>
+          <button
+            onclick="document.getElementById('fileInput').click()"
+            data-i18n="fileSelect"
+          >
+            📁 파일 선택
+          </button>
+
+          <div class="sep"></div>
+
+          <button onclick="setTool('highlight')" data-i18n="highlight">
+            🖊 형광펜
+          </button>
+          <input
+            type="color"
+            id="highlightColor"
+            value="#ffff00"
+            title="형광펜 색상"
+          />
+
+          <button onclick="setTool('text')" data-i18n="text">📝 텍스트</button>
+          <input
+            type="color"
+            id="textColor"
+            value="#d32f2f"
+            title="글자 색상"
+          />
+
+          <div class="sep"></div>
+
+          <button onclick="zoomOut()">➖</button>
           <select id="zoomSelect" onchange="setZoom(this.value)">
             <option value="0.5">50%</option>
             <option value="0.75">75%</option>
             <option value="1.0">100%</option>
             <option value="1.25">125%</option>
             <option value="1.5" selected>150%</option>
-            <option value="1.75">175%</option>
             <option value="2.0">200%</option>
-            <option value="2.5">250%</option>
             <option value="3.0">300%</option>
           </select>
-          <button onclick="zoomIn()">🔍+</button>
-          <span class="sep"></span>
-          <button onclick="prevPage()">◀</button>
-          <span id="pageInfo" class="page-info"></span>
-          <button onclick="nextPage()">▶</button>
-          <span class="sep"></span>
-          <button onclick="undo()">↩ 실행취소</button>
-          <button onclick="clearNotes()">🗑 초기화</button>
-          <button onclick="saveToBrowser()">💾 저장</button>
-          <button onclick="exportJSON()">📤 내보내기</button>
-          <button onclick="importJSON()">📥 불러오기</button>
+          <button onclick="zoomIn()">➕</button>
+
+          <div class="sep"></div>
+
+          <button onclick="undo()" data-i18n="undo">↩ 실행취소</button>
+          <button onclick="clearNotes()" data-i18n="clear">🗑 초기화</button>
+
+          <div class="sep"></div>
+
+          <button onclick="saveToBrowser()" data-i18n="save">💾 저장</button>
+          <button onclick="exportJSON()" data-i18n="export">📤 내보내기</button>
+          <button onclick="importJSON()" data-i18n="import">📥 불러오기</button>
         </div>
 
-        <!-- 모바일 툴바 -->
+        <!-- 모바일 헤더 툴바 -->
         <div class="toolbar-mobile">
-          <label class="file-btn-mobile">📂<input type="file" id="fileInputMobile" accept="application/pdf" /></label>
-          <button onclick="prevPage()">◀</button>
-          <span id="pageInfoMobile" class="page-info"></span>
-          <button onclick="nextPage()">▶</button>
-          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <button onclick="document.getElementById('fileInput').click()">
+            📁
+          </button>
+          <button class="hamburger-btn" onclick="toggleDropdown()">☰</button>
         </div>
       </div>
 
-      <!-- ★ 풀다운 메뉴: header-wrap 안에 있어야 absolute 위치가 top-bar 바로 아래 -->
-      <div class="dropdown-menu" id="dropdownMenu">
+      <!-- 모바일 드롭다운 메뉴 -->
+      <div id="dropdownMenu" class="dropdown-menu">
         <div class="dropdown-inner">
           <div class="dropdown-row">
-            <button onclick="setTool('highlight'); closeMenu()">🖊 형광펜</button>
-            <input type="color" id="highlightColorMobile" value="#ffff00" />
-            <button onclick="setTool('text'); closeMenu()">📝 텍스트</button>
+            <button
+              onclick="
+                setTool('highlight');
+                toggleDropdown();
+              "
+              data-i18n="highlight"
+            >
+              🖊 형광펜
+            </button>
+            <input
+              type="color"
+              id="highlightColorMobile"
+              value="#ffff00"
+              onchange="
+                document.getElementById('highlightColor').value = this.value
+              "
+            />
+            <button
+              onclick="
+                setTool('text');
+                toggleDropdown();
+              "
+              data-i18n="text"
+            >
+              📝 텍스트
+            </button>
           </div>
           <div class="dropdown-row">
-            <button onclick="zoomOut()">🔍−</button>
-            <select id="zoomSelectMobile" onchange="setZoom(this.value)">
-              <option value="0.5">50%</option>
-              <option value="0.75">75%</option>
-              <option value="1.0">100%</option>
-              <option value="1.25">125%</option>
-              <option value="1.5" selected>150%</option>
-              <option value="1.75">175%</option>
-              <option value="2.0">200%</option>
-              <option value="2.5">250%</option>
-              <option value="3.0">300%</option>
-            </select>
-            <button onclick="zoomIn()">🔍+</button>
+            <button onclick="zoomOut()">➖</button>
+            <button onclick="zoomIn()">➕</button>
+            <button
+              onclick="
+                undo();
+                toggleDropdown();
+              "
+              data-i18n="undo"
+            >
+              ↩ 실행취소
+            </button>
+            <button
+              onclick="
+                clearNotes();
+                toggleDropdown();
+              "
+              data-i18n="clear"
+            >
+              🗑 초기화
+            </button>
           </div>
           <div class="dropdown-row">
-            <button onclick="undo(); closeMenu()">↩ 실행취소</button>
-            <button onclick="clearNotes(); closeMenu()">🗑 초기화</button>
-          </div>
-          <div class="dropdown-row">
-            <button onclick="saveToBrowser(); closeMenu()">💾 저장</button>
-            <button onclick="exportJSON(); closeMenu()">📤 내보내기</button>
-            <button onclick="importJSON(); closeMenu()">📥 불러오기</button>
+            <button
+              onclick="
+                saveToBrowser();
+                toggleDropdown();
+              "
+              data-i18n="save"
+            >
+              💾 저장
+            </button>
+            <button
+              onclick="
+                exportJSON();
+                toggleDropdown();
+              "
+              data-i18n="export"
+            >
+              📤 내보내기
+            </button>
+            <button
+              onclick="
+                importJSON();
+                toggleDropdown();
+              "
+              data-i18n="import"
+            >
+              📥 불러오기
+            </button>
           </div>
         </div>
       </div>
+    </header>
 
-    </div><!-- /.header-wrap -->
-
-    <!-- 레이아웃 -->
+    <!-- ── 메인 레이아웃 ── -->
     <div class="layout">
-      <div class="sidebar">
-        <div class="panel">
-          <strong>도구 설명</strong>
-          <p>형광펜: 클릭 위치에 하이라이트</p>
-          <p>텍스트: 클릭 후 텍스트 입력</p>
-        </div>
-        <div class="panel">
-          <strong>Trip.com × Rail Europe</strong>
-          <div class="trip-ad-box">
-            <a href="https://www.trip.com/t/zGQ0YJsVIV2" target="_blank" rel="noopener">
-              <img src="trip_ad_banner.png" alt="Trip Ad" class="trip-banner" />
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="main-area">
+      <!-- PDF 캔버스 영역 -->
+      <main class="main-area">
         <canvas id="pdfCanvas"></canvas>
-      </div>
+      </main>
+
+      <!-- 오른쪽 패널 -->
+      <aside class="right-ads-panel">
+        <div class="panel">
+          <h4 data-i18n="toolDescTitle">도구 설명</h4>
+          <p data-i18n="toolDesc1">형광펜: 클릭 위치에 하이라이트</p>
+          <p data-i18n="toolDesc2">텍스트: 클릭 후 텍스트 입력</p>
+        </div>
+
+        <div class="trip-ad-item">
+          <img src="trip_ad_banner.png" alt="Trip.com Ad" />
+          <a
+            href="https://www.trip.com/t/zGQ0YJsVIV2"
+            target="_blank"
+            rel="noopener"
+            >Trip.com 예약하기</a
+          >
+        </div>
+      </aside>
     </div>
 
-    <div class="footer">
-      PDF Annotator v3.0 · Non-destructive notes · LocalStorage & JSON export 지원
-    </div>
+    <!-- 푸터 -->
+    <footer class="footer">
+      PDF Annotator &copy; 2026. All rights reserved.
+    </footer>
 
-    <!-- 텍스트 입력 모달 -->
-    <div class="modal-overlay" id="textModal">
+    <!-- ── 텍스트 입력 모달 ── -->
+    <div id="textModal" class="modal-overlay">
       <div class="modal-box">
-        <p>텍스트 입력:</p>
-        <input type="text" id="textInput" placeholder="내용을 입력하세요" />
+        <p data-i18n="modalTitle">텍스트 입력</p>
+        <input
+          type="text"
+          id="textInput"
+          placeholder="내용을 입력하세요"
+          data-i18n-ph="modalPlaceholder"
+          autocomplete="off"
+        />
         <div class="modal-actions">
-          <button class="btn-cancel" onclick="closeTextModal()">취소</button>
-          <button class="btn-confirm" onclick="confirmTextModal()">확인</button>
+          <button
+            class="btn-cancel"
+            onclick="closeTextModal()"
+            data-i18n="cancel"
+          >
+            취소
+          </button>
+          <button
+            class="btn-confirm"
+            onclick="confirmTextModal()"
+            data-i18n="confirm"
+          >
+            확인
+          </button>
         </div>
       </div>
     </div>
 
+    <!-- ── 스크립트 ── -->
+    <script>
+      function toggleDropdown() {
+        const menu = document.getElementById('dropdownMenu');
+        if (menu) menu.classList.toggle('open');
+      }
+    </script>
     <script src="app.js"></script>
     <script src="ads.js"></script>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('service-worker.js');
-        });
-      }
-
-      function toggleMenu() {
-        document.getElementById('dropdownMenu').classList.toggle('open');
-      }
-      function closeMenu() {
-        document.getElementById('dropdownMenu').classList.remove('open');
-      }
-      document.addEventListener('click', (e) => {
-        const menu = document.getElementById('dropdownMenu');
-        const btn = document.querySelector('.hamburger-btn');
-        if (menu.classList.contains('open') &&
-            !menu.contains(e.target) && e.target !== btn) {
-          closeMenu();
-        }
-      });
-
-      document.getElementById('fileInputMobile').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) loadPDF(URL.createObjectURL(file));
-      });
-      document.getElementById('highlightColorMobile').addEventListener('input', (e) => {
-        document.getElementById('highlightColor').value = e.target.value;
-      });
-      document.getElementById('zoomSelectMobile').addEventListener('change', (e) => {
-        setZoom(e.target.value);
-        document.getElementById('zoomSelect').value = e.target.value;
-      });
-
-      function prevPage() {
-        if (!window.pdfDoc || window.currentPage <= 1) return;
-        window.currentPage--;
-        renderPage(window.currentPage);
-        updatePageInfo();
-      }
-      function nextPage() {
-        if (!window.pdfDoc || window.currentPage >= window.pdfDoc.numPages) return;
-        window.currentPage++;
-        renderPage(window.currentPage);
-        updatePageInfo();
-      }
-      function updatePageInfo() {
-        const text = window.pdfDoc
-          ? `${window.currentPage} / ${window.pdfDoc.numPages}` : '';
-        ['pageInfo','pageInfoMobile'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = text;
-        });
-      }
-      window.updatePageInfo = updatePageInfo;
-    </script>
   </body>
 </html>
