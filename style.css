@@ -360,4 +360,10 @@ body {
   .main-area {
     padding: 6px;
   }
+  .ad-banner img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
 }
