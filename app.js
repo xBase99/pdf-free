@@ -459,3 +459,26 @@ function clearNotes() {
   pageNotes[window.currentPage] = [];
   renderPage(window.currentPage);
 }
+// ── 페이지 정보 업데이트 ──
+window.updatePageInfo = function () {
+  const pageInfo = document.getElementById('pageInfo');
+  if (pageInfo && window.pdfDoc) {
+    pageInfo.textContent = `${window.currentPage} / ${window.pdfDoc.numPages}`;
+  }
+};
+
+// ── 이전 페이지 이동 ──
+function prevPage() {
+  if (!window.pdfDoc || window.currentPage <= 1) return;
+  window.currentPage--;
+  renderPage(window.currentPage);
+  window.updatePageInfo();
+}
+
+// ── 다음 페이지 이동 ──
+function nextPage() {
+  if (!window.pdfDoc || window.currentPage >= window.pdfDoc.numPages) return;
+  window.currentPage++;
+  renderPage(window.currentPage);
+  window.updatePageInfo();
+}
