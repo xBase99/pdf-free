@@ -24,6 +24,8 @@ const i18n = {
     save: '💾 저장',
     export: '📤 내보내기',
     import: '📥 불러오기',
+    exportPdf: '📄 PDF 저장', // 👈 추가
+    printPdf: '🖨️ PDF 인쇄', // 👈 추가
     toolDescTitle: '도구 설명',
     toolDesc1: '형광펜: 클릭 위치에 하이라이트',
     toolDesc2: '텍스트: 클릭 후 텍스트 입력',
@@ -49,6 +51,8 @@ const i18n = {
     save: '💾 Save',
     export: '📤 Export',
     import: '📥 Import',
+    exportPdf: '📄 Export PDF', // 👈 추가
+    printPdf: '🖨️ Print PDF', // 👈 추가
     toolDescTitle: 'Tool Instructions',
     toolDesc1: 'Highlight: Click to add highlight',
     toolDesc2: 'Text: Click to insert text',

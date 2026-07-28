@@ -77,10 +77,12 @@
           <button onclick="zoomIn()">➕</button>
 
           <div class="sep"></div>
-          <!-- 🔻 [추가] 페이지 네비게이션 UI 🔻 -->
+
           <button onclick="prevPage()">◀</button>
           <span id="pageInfo" class="page-info">1 / 1</span>
           <button onclick="nextPage()">▶</button>
+
+          <div class="sep"></div>
 
           <button onclick="undo()" data-i18n="undo">↩ 실행취소</button>
           <button onclick="clearNotes()" data-i18n="clear">🗑 초기화</button>
@@ -90,14 +92,14 @@
           <button onclick="saveToBrowser()" data-i18n="save">💾 저장</button>
           <button onclick="exportJSON()" data-i18n="export">📤 내보내기</button>
           <button onclick="importJSON()" data-i18n="import">📥 불러오기</button>
-        </div>
 
-        <!-- 모바일 헤더 툴바 -->
-        <div class="toolbar-mobile">
-          <button onclick="document.getElementById('fileInput').click()">
-            📁
+          <!-- 🔻 [추가] PC 툴바용 PDF 저장 및 인쇄 버튼 🔻 -->
+          <button onclick="exportModifiedPDF('download')" data-i18n="exportPdf">
+            📄 PDF 저장
           </button>
-          <button class="hamburger-btn" onclick="toggleDropdown()">☰</button>
+          <button onclick="exportModifiedPDF('print')" data-i18n="printPdf">
+            🖨️ PDF 인쇄
+          </button>
         </div>
       </div>
 
