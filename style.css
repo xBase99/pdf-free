@@ -70,10 +70,13 @@ body {
 
 .toolbar-pc select {
   font-size: 12px;
-  padding: 3px 2px;
+  padding: 3px 6px; /* 좌우 여백을 늘려 글자 잘림 방지 */
+  min-width: 68px; /* 100%, 150% 등이 여유 있게 들어갈 최소 너비 지정 */
   border-radius: 3px;
   border: none;
   flex-shrink: 0;
+  background: #fff;
+  cursor: pointer;
 }
 
 .file-btn {
@@ -166,10 +169,11 @@ body {
   gap: 8px;
 }
 .dropdown-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  font-size: 14px;
+  padding: 6px 8px;
+  min-width: 75px;
+  border-radius: 4px;
+  border: none;
 }
 .dropdown-row button {
   padding: 8px 14px;
