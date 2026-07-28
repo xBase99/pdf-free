@@ -482,3 +482,85 @@ function nextPage() {
   renderPage(window.currentPage);
   window.updatePageInfo();
 }
+// ── 주석이 포함된 PDF 생성 (저장 / 인쇄 옵션) ──
+async function exportModifiedPDF(action = 'download') {
+  if (!window.pdfDoc) {
+    alert('PDF 파일을 먼저 불러와주세요.');
+    return;
+  }
+
+  // 1. PDFLib 문서 생성
+  const { PDFDocument } = PDFLib;
+  const pdfDocLib = await PDFDocument.create();
+
+  const totalPages = window.pdfDoc.numPages;
+
+  // 임시 캔버스 생성 (고해상도 렌더링용)
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+
+  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+    const page = await window.pdfDoc.getPage(pageNum);
+
+    // 원본 비율에 맞게 렌더링 (1.5 ~ 2.0 배율 추천)
+    const viewport = page.getViewport({ scale: 2.0 });
+    tempCanvas.width = viewport.width;
+    tempCanvas.height = viewport.height;
+
+    tempCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // PDF 기본 페이지 렌더링
+    await page.render({ canvasContext: tempCtx, viewport }).promise;
+
+    // 그 위에 작성된 노트/형광펜/텍스트 덮어쓰기
+    // (현재 zoomScale과 맞춰주기 위해 좌표 변환 적용)
+    tempCtx.save();
+    tempCtx.scale(2.0 / window.currentScale, 2.0 / window.currentScale);
+    drawNotes(tempCtx, pageNum);
+    tempCtx.restore();
+
+    // 캔버스를 PNG 이미지로 변환
+    const imgDataUrl = tempCanvas.toDataURL('image/png');
+    const imageBytes = await fetch(imgDataUrl).then((res) => res.arrayBuffer());
+    const embeddedImage = await pdfDocLib.embedPng(imageBytes);
+
+    // PDF 페이지 생성 및 이미지 삽입
+    const pdfPage = pdfDocLib.addPage([viewport.width, viewport.height]);
+    pdfPage.drawImage(embeddedImage, {
+      x: 0,
+      y: 0,
+      width: viewport.width,
+      height: viewport.height,
+    });
+  }
+
+  // 2. 최종 PDF 바이너리 바이트 생성
+  const pdfBytes = await pdfDocLib.save();
+
+  // 3. 처리 분기 (저장 vs 인쇄)
+  if (action === 'download') {
+    // [옵션 A] PDF 파일로 저장
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'annotated_document.pdf';
+    link.click();
+  } else if (action === 'print') {
+    // [옵션 B] 브라우저 PDF 인쇄 창 호출
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    // 비가시 iframe을 만들어 인쇄 실행
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = blobUrl;
+    document.body.appendChild(iframe);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }, 300);
+    };
+  }
+}
